@@ -22,5 +22,5 @@ class CustomException(Exception):
     def __str__(self):
         return self.error_message
     
-
+#this is exception file
         
