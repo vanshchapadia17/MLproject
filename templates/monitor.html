@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Prediction Monitor</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 60%, #0f172a 100%);
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      color: #e2e8f0;
+      padding: 2rem 1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 2rem;
+      width: 100%;
+      max-width: 900px;
+    }
+
+    header a {
+      color: #63b3ed;
+      text-decoration: none;
+      font-size: 0.85rem;
+      letter-spacing: 0.04em;
+    }
+
+    header a:hover { text-decoration: underline; }
+
+    header h1 {
+      font-size: 1.9rem;
+      font-weight: 700;
+      margin-top: 0.6rem;
+      background: linear-gradient(90deg, #e2e8f0, #63b3ed);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    header p { color: #64748b; font-size: 0.9rem; margin-top: 0.4rem; }
+
+    .container {
+      width: 100%;
+      max-width: 900px;
+      display: flex;
+      flex-direction: column;
+      gap: 1.4rem;
+    }
+
+    /* Stats strip */
+    .stats-strip {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1rem;
+    }
+
+    @media (max-width: 600px) {
+      .stats-strip { grid-template-columns: 1fr 1fr; }
+    }
+
+    .stat-chip {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 14px;
+      padding: 1.2rem 1.4rem;
+      text-align: center;
+    }
+
+    .stat-chip .num {
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: #63b3ed;
+      line-height: 1;
+    }
+
+    .stat-chip .lbl {
+      font-size: 0.72rem;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      margin-top: 0.4rem;
+      font-weight: 600;
+    }
+
+    /* Cards */
+    .card {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.09);
+      border-radius: 18px;
+      padding: 1.8rem 2rem;
+    }
+
+    .section-title {
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: #63b3ed;
+      margin-bottom: 1rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px solid rgba(99,179,237,0.2);
+    }
+
+    .trend-img {
+      width: 100%;
+      border-radius: 8px;
+    }
+
+    /* Table */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.82rem;
+    }
+
+    thead th {
+      text-align: left;
+      color: #64748b;
+      font-weight: 600;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 0 0.8rem 0.7rem;
+      border-bottom: 1px solid rgba(255,255,255,0.08);
+    }
+
+    tbody tr:hover { background: rgba(255,255,255,0.03); }
+
+    tbody td {
+      padding: 0.65rem 0.8rem;
+      color: #cbd5e1;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+
+    tbody td.score {
+      font-weight: 700;
+      color: #63b3ed;
+    }
+
+    tbody td.ts {
+      color: #475569;
+      font-size: 0.76rem;
+    }
+
+    /* Empty state */
+    .empty {
+      text-align: center;
+      padding: 4rem 2rem;
+      color: #475569;
+    }
+
+    .empty h2 { font-size: 1.2rem; margin-bottom: 0.5rem; color: #64748b; }
+    .empty p  { font-size: 0.9rem; }
+    .empty a  { color: #63b3ed; text-decoration: none; }
+    .empty a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a href="/predictdata">&larr; Back to Predictor</a>
+    <h1>Prediction Monitor</h1>
+    <p>Live log of every math score prediction made through the app.</p>
+  </header>
+
+  {% if stats is none %}
+  <div class="container">
+    <div class="card empty">
+      <h2>No predictions logged yet</h2>
+      <p>Make your first prediction on the <a href="/predictdata">predictor page</a> and come back here.</p>
+    </div>
+  </div>
+
+  {% else %}
+  <div class="container">
+
+    <!-- Stats strip -->
+    <div class="stats-strip">
+      <div class="stat-chip">
+        <div class="num">{{ stats.total }}</div>
+        <div class="lbl">Total Predictions</div>
+      </div>
+      <div class="stat-chip">
+        <div class="num">{{ stats.mean }}</div>
+        <div class="lbl">Avg Score</div>
+      </div>
+      <div class="stat-chip">
+        <div class="num">{{ stats.min }}</div>
+        <div class="lbl">Min Score</div>
+      </div>
+      <div class="stat-chip">
+        <div class="num">{{ stats.max }}</div>
+        <div class="lbl">Max Score</div>
+      </div>
+    </div>
+
+    <!-- Trend chart -->
+    {% if trend_img %}
+    <div class="card">
+      <div class="section-title">Score Trend Over Time</div>
+      <img class="trend-img" src="data:image/png;base64,{{ trend_img }}" alt="Score trend chart" />
+    </div>
+    {% endif %}
+
+    <!-- Recent predictions table -->
+    {% if recent %}
+    <div class="card">
+      <div class="section-title">Recent Predictions (last 10)</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Timestamp</th>
+            <th>Gender</th>
+            <th>Ethnicity</th>
+            <th>Lunch</th>
+            <th>Test Prep</th>
+            <th>Read</th>
+            <th>Write</th>
+            <th>Predicted</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for row in recent %}
+          <tr>
+            <td class="ts">{{ row.timestamp }}</td>
+            <td>{{ row.gender }}</td>
+            <td>{{ row.race_ethnicity }}</td>
+            <td>{{ row.lunch }}</td>
+            <td>{{ row.test_preparation_course }}</td>
+            <td>{{ row.reading_score }}</td>
+            <td>{{ row.writing_score }}</td>
+            <td class="score">{{ "%.1f"|format(row.predicted_score) }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% endif %}
+
+  </div>
+  {% endif %}
+
+</body>
+</html>
