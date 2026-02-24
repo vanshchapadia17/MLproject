@@ -59,16 +59,30 @@ class PredictPipeline:
             try:
                 import shap
                 from sklearn.linear_model import LinearRegression
+                from sklearn.ensemble import AdaBoostRegressor
+
+                # Load training data as background — statistically correct baseline
+                # and avoids numerical explosion from StandardScaler(with_mean=False)
+                # applied to OneHotEncoded features.
+                train_df   = pd.read_csv(os.path.join("artifects", "train.csv"))
+                X_train    = train_df.drop(columns=["math_score"])
+                background = preprocessor.transform(X_train)
 
                 if isinstance(model, LinearRegression):
-                    explainer  = shap.LinearExplainer(model, data_scaled)
+                    explainer   = shap.LinearExplainer(model, background)
+                    shap_values = explainer.shap_values(data_scaled)
+                elif isinstance(model, AdaBoostRegressor):
+                    explainer   = shap.Explainer(model.predict, background)
+                    shap_values = explainer(data_scaled).values
                 else:
-                    explainer  = shap.TreeExplainer(model)
+                    explainer   = shap.TreeExplainer(model)
+                    shap_values = explainer.shap_values(data_scaled, check_additivity=False)
 
-                shap_values = explainer.shap_values(data_scaled)
                 # shap_values may be 2-D (n_samples, n_features) or 1-D
                 sv = np.array(shap_values)
-                if sv.ndim == 2:
+                if sv.ndim == 3:
+                    sv = sv[0][0]
+                elif sv.ndim == 2:
                     sv = sv[0]
 
                 # Clean feature names from ColumnTransformer
@@ -77,8 +91,9 @@ class PredictPipeline:
                                for n in raw_names]
 
                 shap_img = _build_shap_chart(clean_names, sv)
-            except Exception:
-                pass   # SHAP is optional — never crash prediction over it
+
+            except Exception as shap_err:
+                print(f"[SHAP] Error: {shap_err}")
 
             return preds, shap_img
 
