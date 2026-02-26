@@ -21,3 +21,6 @@ timestamp,gender,race_ethnicity,parental_level_of_education,lunch,test_preparati
 2026-02-25 00:43:39,male,group C,bachelor's degree,free/reduced,completed,75.0,70.0,68.5
 2026-02-25 00:51:00,female,group B,bachelor's degree,standard,none,70.0,80.0,69.5
 2026-02-25 10:15:25,male,group C,bachelor's degree,standard,none,75.0,80.0,82.5
+2026-02-25 12:41:11,male,group A,associate's degree,standard,completed,80.0,75.0,79.38
+2026-02-25 12:41:11,male,group A,associate's degree,standard,completed,80.0,75.0,79.38
+2026-02-26 09:49:30,male,group B,associate's degree,standard,completed,75.0,85.0,84.88
